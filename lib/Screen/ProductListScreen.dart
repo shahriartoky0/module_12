@@ -29,7 +29,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       // print(response.body);
       Map <String, dynamic> responseData = jsonDecode(response.body);
       if (responseData['status'] == 'success') {
-        print(responseData['data']);
+        // print(responseData['data']);
         for (Map <String, dynamic> productJson in responseData['data']) {
           productList.add(Product(
               productJson['_id'], productJson['ProductName'], productJson['ProductCode'], productJson['Img'], productJson['UnitPrice'],

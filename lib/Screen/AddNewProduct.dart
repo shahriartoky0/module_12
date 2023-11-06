@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 import '../Style/style.dart';
 
@@ -10,7 +13,7 @@ class AddNewProduct extends StatefulWidget {
 }
 
 class _AddNewProductState extends State<AddNewProduct> {
-  final TextEditingController _idTEController = TextEditingController();
+  // final TextEditingController _idTEController = TextEditingController();
   final TextEditingController _codeTEController = TextEditingController();
   final TextEditingController _nameTEController = TextEditingController();
   final TextEditingController _imageTEController = TextEditingController();
@@ -19,6 +22,37 @@ class _AddNewProductState extends State<AddNewProduct> {
   final TextEditingController _totalPriceTEController = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  addNewProduct() async {
+    Map<String, dynamic> addProducts = {
+      // "_id": _idTEController.text.trim(),
+      "ProductName": _nameTEController.text.trim(),
+      "ProductCode": _codeTEController.text.trim(),
+      "Img": _imageTEController.text.trim(),
+      "UnitPrice": _unitPriceTEController.text.trim(),
+      "Qty": _quantityTEController.text.trim(),
+      "TotalPrice": _totalPriceTEController.text.trim(),
+    };
+    final Response response = await post(
+        Uri.parse('https://crud.teamrabbil.com/api/v1/CreateProduct'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(addProducts));
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Product Has been Added')));
+      _nameTEController.clear();
+      _codeTEController.clear();
+      _imageTEController.clear();
+      _unitPriceTEController.clear();
+      _quantityTEController.clear();
+      _totalPriceTEController.clear();
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,20 +67,19 @@ class _AddNewProductState extends State<AddNewProduct> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              TextFormField(
-                decoration: AppInputDecoration('Product Id '),
-                controller: _idTEController,
-                validator: isValidate,
-              ),
-              SizedBox(
-                height: 5,
-              ),
+              // TextFormField(
+              //   decoration: AppInputDecoration('Product Id '),
+              //   controller: _idTEController,
+              //   validator: isValidate,
+              // ),
+              // SizedBox(
+              //   height: 5,
+              // ),
               TextFormField(
                 decoration: AppInputDecoration('Product Code'),
                 controller: _codeTEController,
                 validator: isValidate,
               ),
-
               SizedBox(
                 height: 5,
               ),
@@ -93,8 +126,7 @@ class _AddNewProductState extends State<AddNewProduct> {
                   child: Text('Create'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Form Validated ')));
+                      addNewProduct();
                     }
                   },
                   style: AppInputButtonStyle(),
@@ -116,7 +148,7 @@ class _AddNewProductState extends State<AddNewProduct> {
 
   @override
   void dispose() {
-    _idTEController.dispose();
+    // _idTEController.dispose();
     _codeTEController.dispose();
     _nameTEController.dispose();
     _imageTEController.dispose();
