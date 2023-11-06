@@ -82,6 +82,8 @@ class _AddNewProductState extends State<AddNewProduct> {
 
 
 
+
+
   @override
   void initState() {
     if (widget.product != null) {

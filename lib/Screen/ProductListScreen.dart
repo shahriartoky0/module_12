@@ -15,6 +15,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   List productList = [];
+  bool isLoading = false ;
 
   @override
   void initState() {
@@ -23,6 +24,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   void getProductList() async {
+    productList.clear();
+
+    isLoading = true ;
+    setState(() {});
+
     Response response =
     await get(Uri.parse('https://crud.teamrabbil.com/api/v1/ReadProduct'));
     if (response.statusCode == 200) {
@@ -32,13 +38,35 @@ class _ProductListScreenState extends State<ProductListScreen> {
         // print(responseData['data']);
         for (Map <String, dynamic> productJson in responseData['data']) {
           productList.add(Product(
-              productJson['_id'], productJson['ProductName'], productJson['ProductCode'], productJson['Img'], productJson['UnitPrice'],
-              productJson['Qty'],productJson['TotalPrice']));
-
+              productJson['_id'],
+              productJson['ProductName'],
+              productJson['ProductCode'],
+              productJson['Img'],
+              productJson['UnitPrice'],
+              productJson['Qty'],
+              productJson['TotalPrice']));
         }
       }
     }
+    isLoading = false ;
     setState(() {});
+  }
+
+  void deleteProduct(String deleteId) async {
+    final Response response = await get(
+        Uri.parse(
+            'https://crud.teamrabbil.com/api/v1/DeleteProduct/$deleteId'));
+
+    if (response.statusCode == 200) {
+
+      setState(() {
+      getProductList();
+
+      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+          SnackBar(content: Text('Product Successfully Deleted')));
+    }
   }
 
   @override
@@ -47,7 +75,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       appBar: AppBar(
         title: const Text('Product List'),
       ),
-      body: Container(
+      body: isLoading ? const Center(child: CircularProgressIndicator()): Container(
         margin: const EdgeInsets.all(5),
         child: ListView.separated(
           itemCount: productList.length,
@@ -56,7 +84,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             return ListTile(
               leading: Image.network(
                   '${productList[index].image}'),
-              title:  Text('${productList[index].name}'),
+              title: Text('${productList[index].name}'),
               subtitle: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +92,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   Text('Product Code :${productList[index].code}  '),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: [Text('Price : \$${productList[index].unitPrice} ')],
+                    children: [
+                      Text('Price : \$${productList[index].unitPrice} ')
+                    ],
                   )
                 ],
               ),
@@ -72,7 +102,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 showDialog(
                     context: context,
                     builder: (context) {
-                      return  Product_Functionality(product : productList[index]);
+                      return Product_Functionality(product: productList[index],
+                        onpressDelete: (String deleteId) {
+                          deleteProduct(deleteId);
+                        },);
                     });
               },
             );
@@ -94,9 +127,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
 }
 
 class Product_Functionality extends StatelessWidget {
-  final Product product ;
+  final Product product;
+
+  final Function (String) onpressDelete;
+
   const Product_Functionality({
-    super.key, required this.product,
+    super.key, required this.product, required this.onpressDelete,
   });
 
   @override
@@ -111,7 +147,8 @@ class Product_Functionality extends StatelessWidget {
             title: Text('Edit'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>AddNewProduct(product: product,)));
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => AddNewProduct(product: product,)));
             },
           ),
           ListTile(
@@ -119,6 +156,8 @@ class Product_Functionality extends StatelessWidget {
             title: Text('Delete'),
             onTap: () {
               //Here delete Functions
+              Navigator.pop(context);
+              onpressDelete(product.id!);
             },
           ),
         ],
