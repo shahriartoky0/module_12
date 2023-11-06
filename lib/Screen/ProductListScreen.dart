@@ -72,7 +72,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 showDialog(
                     context: context,
                     builder: (context) {
-                      return const Product_Functionality();
+                      return  Product_Functionality(product : productList[index]);
                     });
               },
             );
@@ -94,8 +94,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
 }
 
 class Product_Functionality extends StatelessWidget {
+  final Product product ;
   const Product_Functionality({
-    super.key,
+    super.key, required this.product,
   });
 
   @override
@@ -109,7 +110,8 @@ class Product_Functionality extends StatelessWidget {
             leading: Icon(Icons.edit),
             title: Text('Edit'),
             onTap: () {
-              // Navigator.push(context, MaterialPageRoute(builder: (context)=>AddNewProduct()));
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>AddNewProduct(product: product,)));
             },
           ),
           ListTile(

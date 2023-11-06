@@ -2,11 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:module_12/Screen/Product.dart';
+import 'package:module_12/Screen/ProductListScreen.dart';
 
 import '../Style/style.dart';
 
 class AddNewProduct extends StatefulWidget {
-  const AddNewProduct({super.key});
+  const AddNewProduct({super.key, this.product});
+
+  final Product? product;
 
   @override
   State<AddNewProduct> createState() => _AddNewProductState();
@@ -23,7 +27,7 @@ class _AddNewProductState extends State<AddNewProduct> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  addNewProduct() async {
+  void addNewProduct() async {
     Map<String, dynamic> addProducts = {
       // "_id": _idTEController.text.trim(),
       "ProductName": _nameTEController.text.trim(),
@@ -38,8 +42,8 @@ class _AddNewProductState extends State<AddNewProduct> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(addProducts));
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Product Has been Added')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Product Has been Added')));
       _nameTEController.clear();
       _codeTEController.clear();
       _imageTEController.clear();
@@ -47,11 +51,48 @@ class _AddNewProductState extends State<AddNewProduct> {
       _quantityTEController.clear();
       _totalPriceTEController.clear();
     }
+  } //update o same shudhu link ta alada
+  void updateProduct() async {
+    Map<String, dynamic> addProducts = {
+      // "_id": _idTEController.text.trim(),
+      "ProductName": _nameTEController.text.trim(),
+      "ProductCode": _codeTEController.text.trim(),
+      "Img": _imageTEController.text.trim(),
+      "UnitPrice": _unitPriceTEController.text.trim(),
+      "Qty": _quantityTEController.text.trim(),
+      "TotalPrice": _totalPriceTEController.text.trim(),
+    };
+    final Response response = await post(
+        Uri.parse('https://crud.teamrabbil.com/api/v1/UpdateProduct/${widget.product!.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(addProducts));
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Product Successfully Updated')));
+      _nameTEController.clear();
+      _codeTEController.clear();
+      _imageTEController.clear();
+      _unitPriceTEController.clear();
+      _quantityTEController.clear();
+      _totalPriceTEController.clear();
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=> ProductListScreen()), (route) => false);
+    }
   }
+
+
+
 
   @override
   void initState() {
-    // TODO: implement initState
+    if (widget.product != null) {
+      _nameTEController.text = widget.product!.name!;
+      _codeTEController.text = widget.product!.code!;
+      _imageTEController.text = widget.product!.image!;
+      _unitPriceTEController.text = widget.product!.unitPrice!;
+      _quantityTEController.text = widget.product!.quantity!;
+      _totalPriceTEController.text = widget.product!.totalPrice!;
+    }
+    super.initState();
   }
 
   @override
@@ -123,13 +164,19 @@ class _AddNewProductState extends State<AddNewProduct> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  child: Text('Create'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      addNewProduct();
+                      if (widget.product == null) {
+                        addNewProduct();
+                      } else {
+                        updateProduct();
+                      }
                     }
                   },
                   style: AppInputButtonStyle(),
+                  child: widget.product != null
+                      ? const Text('Update')
+                      : const Text('Create'),
                 ),
               )
             ],
@@ -155,5 +202,6 @@ class _AddNewProductState extends State<AddNewProduct> {
     _unitPriceTEController.dispose();
     _quantityTEController.dispose();
     _totalPriceTEController.dispose();
+    super.dispose();
   }
 }
